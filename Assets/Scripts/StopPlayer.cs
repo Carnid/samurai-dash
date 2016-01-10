@@ -7,9 +7,10 @@ public class StopPlayer : MonoBehaviour {
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            other.gameObject.GetComponent<Rigidbody2D>().gravityScale = 5;
+            //other.gameObject.GetComponent<Rigidbody2D>().gravityScale = 5;
             JumpController jumpCtrl = other.gameObject.GetComponent<JumpController>();
-            jumpCtrl.StopDash();
+            jumpCtrl.DashStrategy.CancelDash();
+            //jumpCtrl.StopDash();
         }
     }
     
