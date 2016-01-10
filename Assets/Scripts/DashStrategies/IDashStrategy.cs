@@ -15,6 +15,15 @@ namespace Assets.Scripts.DashStrategies
         bool StopDash();
         bool CancelDash();
         void StartHanging(Collider2D hanger);
+        void StartHanging(BoxCollider2D hanger, HangingPosition position);
         void StopHanging();
+    }
+
+    public enum HangingPosition
+    {
+        Top,
+        Right,
+        Bottom,
+        Left
     }
 }
