@@ -15,7 +15,7 @@ public class JumpController : MonoBehaviour
 
     [HideInInspector] public Rigidbody2D playerRb;
     [HideInInspector] public Transform playerTr;
-    [HideInInspector] public CircleCollider2D playerBox;
+    [HideInInspector] public BoxCollider2D playerBox;
     [HideInInspector] public Vector2 hangPosition;
     [HideInInspector] public Vector2 hangPoint;
     [HideInInspector] public bool isHanging = false;
@@ -26,10 +26,10 @@ public class JumpController : MonoBehaviour
     [HideInInspector] public RaycastHit2D bottomHangHit;
     [HideInInspector] public bool isDashing = false;
     [HideInInspector] public bool isFreeFalling = false;
-    [HideInInspector] public HingeJoint2D hinge;
     [HideInInspector] public float lastHanged = 0f;
     [HideInInspector] public IDashStrategy DashStrategy;
-    Collider2D hanger = null;
+    BoxCollider2D newHanger = null;
+    HangingPosition hangingPosition;
 
     bool fire1pressed = false;
 
@@ -40,77 +40,71 @@ public class JumpController : MonoBehaviour
         debuggerStart.position = new Vector2(-1000, -1000);
         playerRb = GetComponent<Rigidbody2D>();
         playerTr = GetComponent<Transform>();
-        playerBox = GetComponent<CircleCollider2D>();
-        hinge = GetComponent<HingeJoint2D>();
+        playerBox = GetComponent<BoxCollider2D>();
     }
 
     void Update()
     {
-        //if (hanger == null && isDashing && lastHanged >= hangCooldown)
-        //{
-        //    hanger = Physics2D.OverlapCircle(playerTr.position, 1, 1 << LayerMask.NameToLayer("Hangable"));
-        //}
 
         isGrounded = Physics2D.Linecast(playerTr.position, positionCheck.Groundcheck.position, 1 << LayerMask.NameToLayer("Ground"));
-
-        hanger = null;
         if (isDashing)
         {
-            topHangHit = Physics2D.Linecast(playerTr.position, positionCheck.TopHangCheck.position, 1 << LayerMask.NameToLayer("Hangable"));
-            if (topHangHit)
+
+            Vector2 bottomLeft = new Vector2(0 - playerBox.size.x / 2 * 1.1f, 0 - playerBox.size.y / 2 * 1.1f);
+            Vector2 topRight = new Vector2(playerBox.size.x / 2 * 1.1f, playerBox.size.y / 2 * 1.1f);
+
+            bottomLeft += (Vector2)playerTr.position;
+            topRight += (Vector2)playerTr.position;
+
+            newHanger = (BoxCollider2D) Physics2D.OverlapArea(bottomLeft, topRight, 1 << LayerMask.NameToLayer("Hangable"));
+            
+            if (newHanger != null)
             {
-                hanger = topHangHit.collider;
-            }
-            else
-            {
-                leftHangHit = Physics2D.Linecast(playerTr.position, positionCheck.LeftHangCheck.position, 1 << LayerMask.NameToLayer("Hangable"));
-                if (leftHangHit)
+                RaycastHit2D circleHit = Physics2D.CircleCast(playerTr.position, 1, new Vector2(0, 0), 0, 1 << LayerMask.NameToLayer("Hangable"));
+                Vector2 norm = (circleHit.point - circleHit.centroid).normalized;
+                if (norm.x > 0.5)
                 {
-                    hanger = leftHangHit.collider;
+                    hangingPosition = HangingPosition.Right;
                 }
-                else
+                else if (norm.x < -0.5)
                 {
-                    rightHangHit = Physics2D.Linecast(playerTr.position, positionCheck.RightHangCheck.position, 1 << LayerMask.NameToLayer("Hangable"));
-                    if (rightHangHit)
-                    {
-                        hanger = rightHangHit.collider;
-                    }
-                    else
-                    {
-                        bottomHangHit = Physics2D.Linecast(playerTr.position, positionCheck.Groundcheck.position, 1 << LayerMask.NameToLayer("Hangable"));
-                        if (bottomHangHit)
-                        {
-                            hanger = bottomHangHit.collider;
-                        }
-                    }
+                    hangingPosition = HangingPosition.Left;
+                }
+                else if (norm.y > 0.5)
+                {
+                    hangingPosition = HangingPosition.Top;
+                }
+                else if (norm.y < -0.5)
+                {
+                    hangingPosition = HangingPosition.Bottom;
                 }
             }
+            
         }
-        fire1pressed = Input.GetButtonDown("Fire1");
+
+        if (!fire1pressed)
+        {
+            fire1pressed = Input.GetButtonDown("Fire1");
+        }
 
 
         if (debugDash)
         {
             DashStrategy.DebugDash();
-            //DebugDash();
         }
 
-        //if (hanger != null)
-        //{
-        DashStrategy.StartHanging(hanger);
-        //    hanger = null;
-        //}
+        DashStrategy.StartHanging(newHanger, hangingPosition);
 
         if (fire1pressed && (isGrounded || isHanging))
         {
+            fire1pressed = false;
             DashStrategy.StartDash();
-            //StartDash();
         }
 
         if (isDashing)
         {
+            fire1pressed = false;
             DashStrategy.Dash();
-            //Dash();
         }
 
 
