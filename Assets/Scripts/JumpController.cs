@@ -20,10 +20,6 @@ public class JumpController : MonoBehaviour
     [HideInInspector] public Vector2 hangPoint;
     [HideInInspector] public bool isHanging = false;
     [HideInInspector] public bool isGrounded = false;
-    [HideInInspector] public RaycastHit2D leftHangHit;
-    [HideInInspector] public RaycastHit2D rightHangHit;
-    [HideInInspector] public RaycastHit2D topHangHit;
-    [HideInInspector] public RaycastHit2D bottomHangHit;
     [HideInInspector] public bool isDashing = false;
     [HideInInspector] public bool isFreeFalling = false;
     [HideInInspector] public float lastHanged = 0f;

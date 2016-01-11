@@ -9,7 +9,7 @@ public class DetectDeadlyCollision : MonoBehaviour
 
         if (other.gameObject.CompareTag("Player"))
         {
-            GameObject.Find("Engine").SendMessage("GameOver");
+            GameObject.Find("Engine").GetComponent<SceneEngine>().GameOver();
         }
     }
 }

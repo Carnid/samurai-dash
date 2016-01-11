@@ -13,7 +13,7 @@ public class SceneEngine : MonoBehaviour {
 	
 	}
 
-    void GameOver()
+    public void GameOver()
     {
         print("GameOver");
     }
